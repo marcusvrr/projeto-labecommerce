@@ -1,17 +1,23 @@
-export type user = {
+export enum Category {
+  SPORTS = "brinquedos relacionados a esporte",
+  CARS = "carrinhos",
+  DOLLS = "bonecas"
+}
+
+export type User = {
     id: string,
     email: string,
     password: string
   }
 
-  export type product = {
+  export type Product = {
     id: string,
     name: string,
     price: number,
-    category: string
+    category: Category
   }
   
-  export type purchase = {
+  export type Purchase = {
     userId: string,
     productId: string,
     quantity: number,
