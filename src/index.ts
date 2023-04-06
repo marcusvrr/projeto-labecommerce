@@ -1,6 +1,6 @@
 import express, { Request, Response} from 'express';
 import cors from 'cors';
-import { creatUser, createProduct, createPurchase, dataProduct, dataPurchase, dataUser, getAllProducts, getAllPurchasesFromUserId, getAllUsers, getProductById, queryProductsByName } from "./database";
+import { creatUser, createProduct, createPurchase, dataProduct, dataPurchase, dataUser, deleteProductById, deleteUserById, editProductbyid, editUserbyid, getAllProducts, getAllPurchasesFromUserId, getAllUsers, getProductById, queryProductsByName } from "./database";
 import { Category } from "./types";
 
 const app = express();
@@ -18,11 +18,21 @@ app.get('/users',(req: Request, res: Response)=>{
     const result = getAllUsers()
     res.status(200).send(result)
 })
+app.get('/users/:id/purchases', (req: Request, res: Response) => {
+    const id = req.params.id
+    const result = getAllPurchasesFromUserId(id)
+    res.status(200).send(result)
+});
+
 app.get('/products',(req: Request, res: Response)=>{
     const result = getAllProducts()
     res.status(200).send(result)
 })
-
+app.get('/products/:id', (req: Request, res: Response) => {
+    const id = req.params.id
+    const result = getProductById(id)
+    res.status(200).send(result)
+});
 app.get('/product/search', (req: Request, res: Response) => {
     const q = req.query.produto as string
     const result = queryProductsByName(q)
@@ -46,6 +56,35 @@ app.post('/purchases', (req: Request, res: Response) => {
     const result = createPurchase(userid, productId, quantity, totalPrices)
     res.status(201).send(result)
 });
+
+app.put('/users/:id', (req: Request, res: Response) => {
+    const id = req.params.id
+    const newEmail = req.body.email as string | undefined
+    const newPassword = req.body.password as string | undefined
+    const result = editUserbyid(id, newEmail, newPassword)
+    res.status(200).send(result)
+})
+
+app.put('/products/:id', (req: Request, res: Response) => {
+    const id = req.params.id
+    const newname = req.body.name as string | undefined
+    const newprice = req.body.password as number | undefined
+    const newCategory = req.body.category as Category | undefined
+    const result = editProductbyid(id, newname, newprice,newCategory)
+    res.status(200).send(result)
+})
+
+app.delete('/users/:id', (req: Request, res: Response) => {
+    const id = req.params.id
+    const result = deleteUserById(id)
+    res.status(200).send(result)
+})
+app.delete('/products/:id', (req: Request, res: Response) => {
+    const id = req.params.id
+    const result = deleteProductById(id)
+    res.status(200).send(result)
+})
+
 
 console.log(dataUser);
 console.log(dataProduct);
