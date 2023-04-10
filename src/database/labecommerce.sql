@@ -68,3 +68,48 @@ OFFSET 0;
 select * from products
 WHERE price BETWEEN 30.00 and 50.00
 ORDER BY price ASC;
+
+CREATE TABLE purchases (
+    id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    total_price REAL NOT NULL,
+    paid INTEGER NOT NULL,
+    delivered_at TEXT,
+    buyer_id TEXT NOT NULL,
+    FOREIGN KEY (buyer_id) REFERENCES users(id)
+    );
+--   A coluna paid será utilizada para guardar uma lógica booleana. O SQLite recomenda o uso do número 0 para false e 1 para true.
+-- Os pedidos começam com paid valendo 0 (você irá definir isso quando for popular a tabela com o INSERT).
+
+-- A coluna delivered_at será utilizada para gerenciar a data de entrega do pedido. Ela é opcional, porque sempre começará sem valor ao criar um pedido, ou seja, null.
+-- O SQLite recomenda utilizar TEXT para lidar com strings no formato ISO8601 "aaaa-mm-dd hh:mm:sss". Lembre-se da existência da função nativa DATETIME para gerar datas nesse formato.
+-- a) Crie dois pedidos para cada usuário cadastrado
+-- No mínimo 4 no total (ou seja, pelo menos 2 usuários diferentes) e devem iniciar com a data de entrega nula.
+INSERT INTO purchases (id, total_price, paid, buyer_id)
+VALUES
+("c001", 82, 0, "u001"),
+("c002", 125, 0, "u002"),
+("c003", 96, 0, "u003"),
+("c004", 43, 0, "u004");
+INSERT INTO purchases (id, total_price, paid, buyer_id)
+VALUES
+("c005", 15, 0, "u001"),
+("c006", 56, 0, "u002");
+
+-- Edite o status da data de entrega de um pedido
+-- Simule que o pedido foi entregue no exato momento da sua edição (ou seja, data atual).
+UPDATE purchases
+SET delivered_at = datetime('now','localtime')
+WHERE id= "c001";
+UPDATE purchases
+SET delivered_at = datetime('now','localtime')
+WHERE id IN("c003","c004");
+
+SELECT * FROM purchases;
+-- Exercício 3
+-- Crie a query de consulta utilizando junção para simular um endpoint de histórico de compras de um determinado usuário.
+-- Mocke um valor para a id do comprador, ela deve ser uma das que foram utilizadas no exercício 2.
+
+SELECT * FROM users
+INNER JOIN purchases
+ON users.id=purchases.buyer_id
+WHERE users.id="u002";
