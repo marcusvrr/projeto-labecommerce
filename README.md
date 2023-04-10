@@ -31,7 +31,7 @@ https://dbdiagram.io/d/63c6e8e5296d97641d7a4666
     - [ ]  Get purchase by id
 
 - Documentação Postman
-
+https://documenter.getpostman.com/view/24823090/2s93XsYmDM
 - README.md
 
 # Exemplos de requisição
