@@ -11,6 +11,8 @@ VALUES
 ("u002", "rodrigo@email.com", "rs12345"),
 ("u003", "paula@email.com", "pr12345");
 
+DROP TABLE users;
+
 CREATE TABLE products (
 	id TEXT PRIMARY KEY UNIQUE NOT NULL,
 	name TEXT NOT NULL,
@@ -84,6 +86,8 @@ CREATE TABLE purchases (
 -- O SQLite recomenda utilizar TEXT para lidar com strings no formato ISO8601 "aaaa-mm-dd hh:mm:sss". Lembre-se da existência da função nativa DATETIME para gerar datas nesse formato.
 -- a) Crie dois pedidos para cada usuário cadastrado
 -- No mínimo 4 no total (ou seja, pelo menos 2 usuários diferentes) e devem iniciar com a data de entrega nula.
+
+DROP TABLE purchases;
 INSERT INTO purchases (id, total_price, paid, buyer_id)
 VALUES
 ("c001", 82, 0, "u001"),
@@ -113,3 +117,27 @@ SELECT * FROM users
 INNER JOIN purchases
 ON users.id=purchases.buyer_id
 WHERE users.id="u002";
+
+CREATE TABLE purchases_products(
+    purchase_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (purchase_id) REFERENCES purchases (id),
+    FOREIGN KEY (product_id) REFERENCES products (id)
+);
+INSERT INTO purchases_products(purchase_id, product_id, quantity)
+VALUES
+('c001','p003',1),
+('c001','p004',1),
+('c002','p002',2),
+('c002','p005',1);
+
+SELECT * FROM purchases_products;
+
+DROP TABLE purchases_products;
+
+SELECT * FROM purchases_products
+INNER JOIN purchases
+ON purchases_products.purchase_id = purchases.id
+INNER JOIN products
+ON purchases_products.product_id = products.id;
