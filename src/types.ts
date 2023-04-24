@@ -14,7 +14,7 @@ export type User = {
     id: string,
     name: string,
     price: number,
-    category: Category
+    category: String
   }
   
   export type Purchase = {

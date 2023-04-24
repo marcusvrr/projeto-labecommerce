@@ -27,34 +27,52 @@ app.get("/ping", async (req: Request, res: Response) => {
         }
     }
 })
-
+//refatorado em query builder
 app.get('/users', async (req: Request, res: Response) => {
     try {
-        const result = await db.raw('SELECT * FROM users;')
+        const result = await db.select("*").from("users")
         res.status(200).send(result)
     } catch (error: any) {
         res.status(400).send(error.message)
     }
 })
 
-app.get('/users/:id/purchases', (req: Request, res: Response) => {
+app.get('/users/:id/purchases', async (req: Request, res: Response) => {
     try {
-        const id = req.params.id
-        const userExists = dataUser.find((user) => user.id === id)
-        if (!userExists) {
-            throw new Error("Usuário não encontrado")
+        const id = req.params.id as string
+        // const [purchaseExists] = await db.raw(`SELECT * FROM  purchases WHERE buyer="${id}";`)
+        const [purchaseExists] = await db.select("*").from("purchases").where({buyer: id})
+        if (!purchaseExists) {
+            res.status(404);
+            throw new Error("compra não encontrada")
         }
-        const result = getAllPurchasesFromUserId(id)
-        res.status(200).send(result)
+        const [result] = await db("purchases")
+            .select(
+              "purchases.id AS purchaseId",
+              "total_price AS totalPrice",
+              "purchases.created_at AS createdAt",
+              "paid AS isPaid",
+              "buyer AS buyerId",
+              "users.email AS buyerEmail",
+              "users.name AS buyerName").innerJoin("users", "purchases.buyer","=","users.id").where("users.id","=",`${id}`)
+        const productsList = await db("products").select(
+            "products.id AS id",
+            "name",
+            "price",
+            "description",
+            "image_url",
+            "quantity").innerJoin("purchases_products", "products.id","=","purchases_products.product_id").innerJoin("purchases", "purchases.id","=", "purchases_products.purchase_id").where("purchases.buyer","=",`${id}`)
+        const finalResult = {... result, productsList: productsList}
+       res.status(200).send(finalResult)
     } catch (error: any) {
         res.send(error.message)
     }
 
 });
-
+//refatorado em query builder
 app.get('/products', async (req: Request, res: Response) => {
     try {
-        const result = await db.raw('SELECT * FROM products;')
+        const result =  await db.select("*").from("products")
         res.status(200).send(result)
     } catch (error: any) {
         res.status(400).send(error.message)
@@ -153,7 +171,7 @@ app.post('/purchases', async (req: Request, res: Response) => {
     }
 });
 
-app.put('/users/:id', (req: Request, res: Response) => {
+app.put('/users/:id', async (req: Request, res: Response) => {
     try {
         const id = req.params.id
         const newEmail = req.body.email as string | undefined
@@ -168,7 +186,7 @@ app.put('/users/:id', (req: Request, res: Response) => {
                 throw new Error("'nome' deve ser tipo string")
             }
         }
-        const userExists = dataUser.find((user) => user.id === id)
+        const userExists =  await db.raw(`SELECT * FROM users WHERE id = "${id}";`)
         if (!userExists) {
             throw new Error("Usuário não encontrado")
         }
@@ -180,7 +198,7 @@ app.put('/users/:id', (req: Request, res: Response) => {
 
 })
 
-// app.put('/products/:id', (req: Request, res: Response) => {
+// app.put('/products/:id', async (req: Request, res: Response) => {
 //     try {
 //     const id = req.params.id
 //     const newName = req.body.name as string | undefined
@@ -201,7 +219,7 @@ app.put('/users/:id', (req: Request, res: Response) => {
 //             throw new Error("'nome' deve ser tipo string")
 //         }
 //     }
-//     const productExists = dataProduct.find((product) => product.id === id)
+//     const productExists =  await db.raw(`SELECT * FROM products WHERE id = "${id}";`)
 //     if (!productExists) {
 //         throw new Error("Produto não encontrado")
 //     }
@@ -257,4 +275,5 @@ console.log(queryProductsByName("bola"));
 console.log(createPurchase("003", "003", 2, 140));
 
 console.log(getAllPurchasesFromUserId("001"));
+
 
